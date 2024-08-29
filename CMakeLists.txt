@@ -35,13 +35,14 @@ macro(add_sources group dir)
 endmacro(add_sources)
 
 add_sources("src"               ".")
+add_sources("src/util"          "util")
 add_sources("src/interfaces"    "interfaces")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include_directories(${utils_include_dirs})
 
-add_library(utils STATIC ${all_sources})
+add_library(utils ${all_sources})
 
 if (CMAKE_VERSION VERSION_GREATER 3.7.8)
     if (MSVC_IDE)
