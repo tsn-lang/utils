@@ -173,6 +173,12 @@ namespace utils {
     }
     
     void String::copy(const char* src, u32 len) {
+        if (len == 0) {
+            if (m_capacity > 0) m_str[0] = 0;
+            m_len = 0;
+            return;
+        }
+        
         if (len > m_capacity) {
             if (m_str) delete [] m_str;
             m_capacity = len;
