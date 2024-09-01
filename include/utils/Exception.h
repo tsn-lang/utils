@@ -5,6 +5,7 @@ namespace utils {
     class Exception {
         public:
             Exception(const String& msg);
+            Exception(const char* msgFmt, ...);
         
             const String& message() const;
             

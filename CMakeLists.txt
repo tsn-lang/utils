@@ -10,10 +10,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-set(
-    utils_include_dirs
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+set(TSN_UTILS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE STRING "TSN Utils Include Directory")
 
 set (all_sources "")
 macro(add_sources group dir)
@@ -40,7 +37,7 @@ add_sources("src/interfaces"    "interfaces")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-include_directories(${utils_include_dirs})
+include_directories(${TSN_UTILS_INCLUDE_DIR})
 
 add_library(utils ${all_sources})
 
