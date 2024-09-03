@@ -17,4 +17,8 @@ namespace utils {
     const String& Exception::message() const {
         return m_msg;
     }
+    
+    char const* Exception::what() const {
+        return m_msg.c_str();
+    }
 };
