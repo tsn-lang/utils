@@ -172,6 +172,116 @@ namespace utils {
     };
 
     template <typename T>
+    class ConstArrayView {
+        public:
+            using const_iterator = ArrayIterator<const T>;
+            using PointerTp = std::remove_pointer_t<std::remove_cvref_t<T>>*;
+
+            ConstArrayView(const Array<T>* target, u32 from, u32 size);
+            ~ConstArrayView();
+
+            const_iterator begin() const;
+            const_iterator end() const;
+            const T& last() const;
+
+            u32 size() const;
+            u32 viewOffset() const;
+            u32 viewSize() const;
+            Array<T>* target() const;
+
+            const T& operator[](u32 idx) const;
+
+            // element
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, T>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, const T&>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, const T*>> each(F&& cb) const;
+
+            // element, index
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, T, u32>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, const T&, u32>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_v<F, const T*, u32>> each(F&& cb) const;
+
+            // element -> do_break
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, const T&>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, const T*>> each(F&& cb) const;
+
+            // element, index -> do_break
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, const T&, u32>> each(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, const T*, u32>> each(F&& cb) const;
+
+            // element
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T>, bool> some(F&& cb) const;
+
+            // element, index
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, bool> some(F&& cb) const;
+
+            // element
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T>, Array<T>> filter(F&& cb)  const;
+
+            // element, index
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, Array<T>> filter(F&& cb) const;
+
+            // element
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T>, const PointerTp> find(F&& cb) const;
+
+            // element, index
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, const PointerTp> find(F&& cb) const;
+
+            // element
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T>, i64> findIndex(F&& cb) const;
+
+            // element, index
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, i64> findIndex(F&& cb) const;
+
+            // element
+            template <typename F, typename M = std::invoke_result_t<F, T>>
+            std::enable_if_t<std::is_invocable_r_v<M, F, T>, Array<M>> map(F&& cb) const;
+
+            // element, index
+            template <typename F, typename M = std::invoke_result_t<F, T, u32>>
+            std::enable_if_t<std::is_invocable_r_v<M, F, T, u32>, Array<M>> map(F&& cb) const;
+
+            template <typename F>
+            std::enable_if_t<std::is_invocable_r_v<bool, F, T, T>, Array<T>> sorted(F&& cb) const;
+
+        protected:
+            const Array<T>* m_target;
+            u32 m_offset;
+            u32 m_size;
+    };
+
+
+    template <typename T>
     class Array {
         public:
             using iterator = ArrayIterator<T>;
@@ -207,6 +317,7 @@ namespace utils {
             void remove(u32 from, u32 count = 1);
             Array<T> extract(u32 from, u32 count = UINT_MAX, bool doRemove = true);
             ArrayView<T> view(u32 from, u32 count = UINT_MAX);
+            ConstArrayView<T> view(u32 from, u32 count = UINT_MAX) const;
 
             void clear(bool doFreeMem = false);
             void reserve(u32 count, bool doExpandSize = false);
@@ -319,6 +430,7 @@ namespace utils {
 
         protected:
             friend class ArrayView<T>;
+            friend class ConstArrayView<T>;
             void expand(u32 minDelta = 1);
 
             u32 m_size;

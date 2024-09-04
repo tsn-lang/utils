@@ -108,6 +108,10 @@ namespace utils {
 
     template <typename T>
     ArrayView<T>::ArrayView(Array<T>* target, u32 from, u32 size) : m_target(target), m_offset(from), m_size(size) {
+        if (m_offset > m_target->m_size) m_offset = m_target->m_size;
+        if (u64(m_offset) + u64(m_size) > u64(m_target->m_size)) {
+            m_size = m_target->m_size - m_offset;
+        }
     }
 
     template <typename T>
@@ -429,6 +433,281 @@ namespace utils {
 
 
     //
+    // ConstArrayView
+    //
+
+    template <typename T>
+    ConstArrayView<T>::ConstArrayView(const Array<T>* target, u32 from, u32 size) : m_target(target), m_offset(from), m_size(size) {
+        if (m_offset > m_target->m_size) m_offset = m_target->m_size;
+        if (u64(m_offset) + u64(m_size) > u64(m_target->m_size)) {
+            m_size = m_target->m_size - m_offset;
+        }
+    }
+
+    template <typename T>
+    ConstArrayView<T>::~ConstArrayView<T>() {
+    }
+
+    template <typename T>
+    typename ConstArrayView<T>::const_iterator ConstArrayView<T>::begin() const {
+        if (m_offset > m_target->m_size) return m_target->m_data + m_target->m_size;
+        return m_target->m_data + m_offset;
+    }
+
+    template <typename T>
+    const T& ConstArrayView<T>::last() const {
+        return *(end() - 1);
+    }
+
+    template <typename T>
+    typename ConstArrayView<T>::const_iterator ConstArrayView<T>::end() const {
+        size_t end = m_offset + m_size;
+        if (end > m_target->m_size) end = m_target->m_size;
+        return m_target->m_data + end;
+    }
+
+    template <typename T>
+    u32 ConstArrayView<T>::size() const {
+        if (m_offset >= m_target->m_size) return 0;
+        
+        if ((m_offset + m_size) >= m_target->m_size) return m_target->m_size - m_offset;
+
+        return m_size;
+    }
+
+    template <typename T>
+    u32 ConstArrayView<T>::viewOffset() const {
+        return m_offset;
+    }
+
+    template <typename T>
+    u32 ConstArrayView<T>::viewSize() const {
+        return m_size;
+    }
+
+    template <typename T>
+    Array<T>* ConstArrayView<T>::target() const {
+        return m_target;
+    }
+
+    template <typename T>
+    const T& ConstArrayView<T>::operator[](u32 idx) const {
+        return m_target->operator[](m_offset + idx);
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, T>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(m_target->m_data[i]);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, const T&>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(m_target->m_data[i]);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, const T*>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(&m_target->m_data[i]);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, T, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(m_target->m_data[i], i - m_offset);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, const T&, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(m_target->m_data[i], i - m_offset);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_v<F, const T*, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            cb(&m_target->m_data[i], i - m_offset);
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, const T&>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, const T*>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(&m_target->m_data[i])) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, const T&, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, const T*, u32>> ConstArrayView<T>::each(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(&m_target->m_data[i], i - m_offset)) break;
+        }
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T>, bool> ConstArrayView<T>::some(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) return true;
+        }
+
+        return false;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, bool> ConstArrayView<T>::some(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) return true;
+        }
+
+        return false;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T>, Array<T>> ConstArrayView<T>::filter(F&& cb) const {
+        Array<T> out;
+
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) out.push(m_target->m_data[i]);
+        }
+
+        return out;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, Array<T>> ConstArrayView<T>::filter(F&& cb) const {
+        Array<T> out;
+
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) out.push(m_target->m_data[i]);
+        }
+
+        return out;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T>, const typename ConstArrayView<T>::PointerTp> ConstArrayView<T>::find(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) {
+                if constexpr (std::is_pointer_v<T>) return m_target->m_data[i];
+                else return &m_target->m_data[i];
+            }
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, const typename ConstArrayView<T>::PointerTp> ConstArrayView<T>::find(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) {
+                if constexpr (std::is_pointer_v<T>) return m_target->m_data[i];
+                else return &m_target->m_data[i];
+            }
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T>, i64> ConstArrayView<T>::findIndex(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i])) return i;
+        }
+
+        return -1;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, u32>, i64> ConstArrayView<T>::findIndex(F&& cb) const {
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) {
+            if (cb(m_target->m_data[i], i - m_offset)) return i;
+        }
+
+        return -1;
+    }
+
+    template <typename T>
+    template <typename F, typename M>
+    std::enable_if_t<std::is_invocable_r_v<M, F, T>, Array<M>> ConstArrayView<T>::map(F&& cb) const {
+        Array<M> out(m_size);
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) out.push(cb(m_target->m_data[i]));
+        return out;
+    }
+
+    template <typename T>
+    template <typename F, typename M>
+    std::enable_if_t<std::is_invocable_r_v<M, F, T, u32>, Array<M>> ConstArrayView<T>::map(F&& cb) const {
+        Array<M> out(m_size);
+        for (u32 i = m_offset;i < (m_offset + m_size) && i < m_target->m_size;i++) out.push(cb(m_target->m_data[i], i - m_offset));
+        return out;
+    }
+
+    template <typename T>
+    template <typename F>
+    std::enable_if_t<std::is_invocable_r_v<bool, F, T, T>, Array<T>> ConstArrayView<T>::sorted(F&& cb) const {
+        Array<T> out = *this;
+        std::sort(out.begin(), out.end(), cb);
+        return out;
+    }
+
+
+
+    //
     // Array
     //
 
@@ -651,6 +930,11 @@ namespace utils {
     template <typename T>
     ArrayView<T> Array<T>::view(u32 from, u32 count) {
         return ArrayView<T>(this, from, count);
+    }
+
+    template <typename T>
+    ConstArrayView<T> Array<T>::view(u32 from, u32 count) const {
+        return ConstArrayView<T>(this, from, count);
     }
 
     template <typename T>
