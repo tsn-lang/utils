@@ -1,14 +1,17 @@
 #include <utils/String.h>
+#include <utils/Exception.h>
 #include <type_traits>
 
 #include <string.h>
 #include <stdarg.h>
 
 namespace utils {
-    String::String() : m_str(nullptr), m_len(0), m_capacity(0) {
+    String::String() : m_isReadOnly(false), m_str(nullptr), m_len(0), m_capacity(0) {
     }
 
     String::String(const char* cstr) {
+        m_isReadOnly = false;
+
         if (!cstr || cstr[0] == 0) {
             m_len = 0;
             m_capacity = 0;
@@ -25,6 +28,7 @@ namespace utils {
     }
 
     String::String(const std::string& str) {
+        m_isReadOnly = false;
         m_len = (u32)str.length();
         m_capacity = m_len;
         m_str = new char[m_len + 1];
@@ -35,6 +39,7 @@ namespace utils {
     }
 
     String::String(const String& str) {
+        m_isReadOnly = false;
         m_len = str.m_len;
         m_capacity = m_len;
         m_str = new char[m_len + 1];
@@ -44,7 +49,7 @@ namespace utils {
     }
 
     String::~String() {
-        if (m_str) delete [] m_str;
+        if (!m_isReadOnly && m_str) delete [] m_str;
         m_str = nullptr;
         m_len = m_capacity = 0;
     }
@@ -62,31 +67,43 @@ namespace utils {
     }
 
     String& String::operator =(const String& rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+
         copy(rhs.m_str, rhs.m_len);
         return *this;
     }
 
     String& String::operator =(const char* rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         copy(rhs, (u32)strlen(rhs));
         return *this;
     }
 
     String& String::operator =(const std::string& rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         copy(rhs.c_str(), (u32)rhs.length());
         return *this;
     }
 
     String& String::operator +=(const String& rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         append(rhs.m_str, rhs.m_len);
         return *this;
     }
 
     String& String::operator +=(const char* rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         append(rhs, (u32)strlen(rhs));
         return *this;
     }
 
     String& String::operator +=(const std::string& rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         append(rhs.c_str(), (u32)rhs.length());
         return *this;
     }
@@ -154,25 +171,12 @@ namespace utils {
     }
 
     String::operator std::string() const {
-        return std::string(m_str);
-    }
-
-    String String::Format(const char* fmt, ...) {
-        String ret;
-
-        u32 fmtLen = (u32)strlen(fmt);
-        ret.m_capacity = fmtLen + 256;
-        ret.m_str = new char[ret.m_capacity + 1];
-
-        va_list l;
-        va_start(l, fmt);
-        ret.m_len = (u32)vsnprintf(ret.m_str, fmtLen + 256, fmt, l);
-        va_end(l);
-
-        return ret;
+        return std::string(m_str, m_len);
     }
     
     void String::copy(const char* src, u32 len) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         if (len == 0) {
             if (m_capacity > 0) m_str[0] = 0;
             m_len = 0;
@@ -189,8 +193,36 @@ namespace utils {
         for (u32 i = 0;i < m_len;i++) m_str[i] = src[i];
         m_str[m_len] = 0;
     }
+
+    String String::Format(const char* fmt, ...) {
+        String ret;
+
+        u32 fmtLen = (u32)strlen(fmt);
+        ret.m_capacity = fmtLen + 256;
+        ret.m_str = new char[ret.m_capacity + 1];
+
+        va_list l;
+        va_start(l, fmt);
+        ret.m_len = (u32)vsnprintf(ret.m_str, fmtLen + 256, fmt, l);
+        va_end(l);
+
+        return ret;
+    }
+
+    String String::View(const char* str, u32 length) {
+        String ret;
+
+        ret.m_isReadOnly = true;
+        ret.m_str = const_cast<char*>(str);
+        ret.m_len = length;
+        ret.m_capacity = 0;
+
+        return ret;
+    }
     
     void String::append(const char* src, u32 len) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         if (len + m_len >= m_capacity) extend(len + m_len + 64);
 
         for (u32 i = 0;i < len;i++) m_str[m_len + i] = src[i];
@@ -200,6 +232,8 @@ namespace utils {
     }
 
     void String::extend(u32 newCapacity) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
         char* newData = new char[newCapacity + 1];
 
         if (m_str) {

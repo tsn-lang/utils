@@ -28,16 +28,18 @@ namespace utils {
             bool operator ==(const String& rhs) const;
             bool operator ==(const char* rhs) const;
             bool operator ==(const std::string& rhs) const;
-
             operator std::string() const;
             
+            void copy(const char* src, u32 len);
+            
             static String Format(const char* fmt, ...);
+            static String View(const char* str, u32 length);
 
         protected:
-            void copy(const char* src, u32 len);
             void append(const char* src, u32 len);
             void extend(u32 newCapacity);
 
+            bool m_isReadOnly;
             char* m_str;
             u32 m_len;
             u32 m_capacity;
