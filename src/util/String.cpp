@@ -161,19 +161,24 @@ namespace utils {
     bool String::operator ==(const String& rhs) const {
         if (m_len != rhs.m_len) return false;
         if (m_len == 0) return true;
-        return strcmp(m_str, rhs.m_str) == 0;
+        return strncmp(m_str, rhs.m_str, m_len) == 0;
     }
 
     bool String::operator ==(const char* rhs) const {
         if (!m_str != !rhs) return false;
         if (!m_str) return true;
-        return strcmp(m_str, rhs) == 0;
+
+        u32 len = strlen(rhs);
+        
+        if (m_len != len) return false;
+        if (m_len == 0) return true;
+        return strncmp(m_str, rhs, m_len) == 0;
     }
 
     bool String::operator ==(const std::string& rhs) const {
         if (m_len != rhs.length()) return false;
         if (m_len == 0) return true;
-        return strcmp(m_str, rhs.c_str()) == 0;
+        return strncmp(m_str, rhs.c_str(), m_len) == 0;
     }
 
     String::operator std::string() const {
