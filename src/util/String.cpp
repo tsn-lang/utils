@@ -39,9 +39,15 @@ namespace utils {
     }
 
     String::String(const String& str) {
-        m_isReadOnly = false;
+        m_isReadOnly = str.m_isReadOnly;
         m_len = str.m_len;
         m_capacity = m_len;
+
+        if (m_isReadOnly) {
+            m_str = str.m_str;
+            return;
+        }
+
         m_str = new char[m_len + 1];
 
         for (u32 i = 0;i < m_len;i++) m_str[i] = str.m_str[i];
