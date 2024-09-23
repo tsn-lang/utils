@@ -1,5 +1,5 @@
 #include <utils/Exception.h>
-#include <varargs.h>
+#include <stdarg.h>
 
 namespace utils {
     Exception::Exception(const String& msg) : m_msg(msg) {}
