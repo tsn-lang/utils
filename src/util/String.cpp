@@ -168,7 +168,7 @@ namespace utils {
         if (!m_str != !rhs) return false;
         if (!m_str) return true;
 
-        u32 len = strlen(rhs);
+        u32 len = u32(strlen(rhs));
         
         if (m_len != len) return false;
         if (m_len == 0) return true;
