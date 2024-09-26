@@ -28,6 +28,9 @@ namespace utils {
             bool operator ==(const String& rhs) const;
             bool operator ==(const char* rhs) const;
             bool operator ==(const std::string& rhs) const;
+            bool operator !=(const String& rhs) const;
+            bool operator !=(const char* rhs) const;
+            bool operator !=(const std::string& rhs) const;
             operator std::string() const;
             
             void copy(const char* src, u32 len);

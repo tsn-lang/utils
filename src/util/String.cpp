@@ -180,6 +180,29 @@ namespace utils {
         if (m_len == 0) return true;
         return strncmp(m_str, rhs.c_str(), m_len) == 0;
     }
+    
+    bool String::operator !=(const String& rhs) const {
+        if (m_len != rhs.m_len) return true;
+        if (m_len == 0) return false;
+        return strncmp(m_str, rhs.m_str, m_len) != 0;
+    }
+
+    bool String::operator !=(const char* rhs) const {
+        if (!m_str != !rhs) return true;
+        if (!m_str) return false;
+
+        u32 len = u32(strlen(rhs));
+        
+        if (m_len != len) return true;
+        if (m_len == 0) return false;
+        return strncmp(m_str, rhs, m_len) != 0;
+    }
+
+    bool String::operator !=(const std::string& rhs) const {
+        if (m_len != rhs.length()) return true;
+        if (m_len == 0) return false;
+        return strncmp(m_str, rhs.c_str(), m_len) != 0;
+    }
 
     String::operator std::string() const {
         return std::string(m_str, m_len);
