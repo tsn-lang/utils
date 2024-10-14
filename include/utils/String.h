@@ -19,9 +19,11 @@ namespace utils {
             String& operator =(const String& rhs);
             String& operator =(const char* rhs);
             String& operator =(const std::string& rhs);
+            String& operator +=(char rhs);
             String& operator +=(const String& rhs);
             String& operator +=(const char* rhs);
             String& operator +=(const std::string& rhs);
+            String operator +(char rhs) const;
             String operator +(const String& rhs) const;
             String operator +(const char* rhs) const;
             String operator +(const std::string& rhs) const;
@@ -31,6 +33,8 @@ namespace utils {
             bool operator !=(const String& rhs) const;
             bool operator !=(const char* rhs) const;
             bool operator !=(const std::string& rhs) const;
+            char operator [](u32 index) const;
+            char& operator [](u32 index);
             operator std::string() const;
             
             void copy(const char* src, u32 len);

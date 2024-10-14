@@ -93,6 +93,13 @@ namespace utils {
         return *this;
     }
 
+    String& String::operator +=(char rhs) {
+        if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
+        
+        append(&rhs, 1);
+        return *this;
+    }
+
     String& String::operator +=(const String& rhs) {
         if (m_isReadOnly) throw Exception("Attempted to write to read-only string");
         
@@ -112,6 +119,19 @@ namespace utils {
         
         append(rhs.c_str(), (u32)rhs.length());
         return *this;
+    }
+
+    String String::operator +(const char rhs) const {
+        String ret;
+        ret.m_len = m_len + 1;
+        ret.m_capacity = ret.m_len;
+        ret.m_str = new char[ret.m_len + 1];
+
+        for (u32 i = 0;i < m_len;i++) ret.m_str[i] = m_str[i];
+        ret.m_str[m_len] = rhs;
+        ret.m_str[m_len + 1] = 0;
+
+        return ret;
     }
 
     String String::operator +(const String& rhs) const {
@@ -202,6 +222,14 @@ namespace utils {
         if (m_len != rhs.length()) return true;
         if (m_len == 0) return false;
         return strncmp(m_str, rhs.c_str(), m_len) != 0;
+    }
+
+    char String::operator [](u32 index) const {
+        return m_str[index];
+    }
+
+    char& String::operator [](u32 index) {
+        return m_str[index];
     }
 
     String::operator std::string() const {
