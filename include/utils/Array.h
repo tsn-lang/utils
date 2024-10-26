@@ -334,6 +334,14 @@ namespace utils {
             Array<T>& operator=(const Array<T>& rhs);
             Array<T>& operator=(std::initializer_list<T> list);
 
+            template <typename O>
+            std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, Array<O>&>
+            cast();
+            
+            template <typename O>
+            std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, const Array<O>&>
+            cast() const;
+
             // element
             template <typename F>
             std::enable_if_t<std::is_invocable_v<F, T>> each(F&& cb) const;
