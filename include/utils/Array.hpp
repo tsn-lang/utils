@@ -1051,7 +1051,7 @@ namespace utils {
     template <typename O>
     std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, Array<O>&>
     Array<T>::cast() {
-        static_assert(!std::is_convertible_v<T, O>, "Array element type is not convertible to the specified element type");
+        static_assert(std::is_convertible_v<T, O>, "Array element type is not convertible to the specified element type");
         return *(Array<O>*)this;
     }
 
@@ -1059,7 +1059,7 @@ namespace utils {
     template <typename O>
     std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, const Array<O>&>
     Array<T>::cast() const {
-        static_assert(!std::is_convertible_v<T, O>, "Array element type is not convertible to the specified element type");
+        static_assert(std::is_convertible_v<T, O>, "Array element type is not convertible to the specified element type");
         return *(const Array<O>*)this;
     }
 
