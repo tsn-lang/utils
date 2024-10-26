@@ -1048,6 +1048,22 @@ namespace utils {
     }
 
     template <typename T>
+    template <typename O>
+    std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, Array<O>&>
+    Array<T>::cast() {
+        static_assert<!std::is_convertible_v<T, O>>("Array element type is not convertible to the specified element type");
+        return *(Array<O>*)this;
+    }
+
+    template <typename T>
+    template <typename O>
+    std::enable_if_t<std::is_pointer_v<T> && std::is_pointer_v<O>, const Array<O>&>
+    Array<T>::cast() const {
+        static_assert<!std::is_convertible_v<T, O>>("Array element type is not convertible to the specified element type");
+        return *(const Array<O>*)this;
+    }
+
+    template <typename T>
     template <typename F>
     std::enable_if_t<std::is_invocable_v<F, T>> Array<T>::each(F&& cb) const {
         for (u32 i = 0;i < m_size;i++) cb(m_data[i]);
